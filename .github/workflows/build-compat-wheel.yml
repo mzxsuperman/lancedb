@@ -1,0 +1,29 @@
+name: Build lancedb-compat wheel (x86-64-v2)
+
+on:
+  workflow_dispatch:  # 手动触发
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install maturin
+        run: pip install maturin
+
+      - name: Build lancedb wheel (x86-64-v2 baseline)
+        working-directory: python
+        env:
+          RUSTFLAGS: "-C target-cpu=x86-64-v2"
+        run: maturin build --release --interpreter python3.12
+
+      - name: Upload wheel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lancedb-compat-wheel
+          path: python/target/wheels/*.whl
+          retention-days: 30
