@@ -1,4 +1,4 @@
-name: Build lancedb-compat wheel (x86-64-v2)
+name: Build lancedb-compat wheel (x86-64-v2, no AVX)
 
 on:
   workflow_dispatch:
@@ -24,20 +24,20 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: lancedb-x86-64-v2-v3
+          key: lancedb-no-avx-v1
 
       - name: Install maturin
         run: pip install maturin
 
-      - name: Build lancedb wheel (x86-64-v2 baseline, C + Rust)
+      - name: Build lancedb wheel (x86-64-v2, NO AVX at all)
         working-directory: python
         env:
-          RUSTFLAGS: "-C target-cpu=x86-64-v2"
-          CFLAGS: "-march=x86-64-v2 -O2"
-          CXXFLAGS: "-march=x86-64-v2 -O2"
-          # aws-lc-rs / ring build scripts read these
-          AWS_LC_CFLAGS: "-march=x86-64-v2 -O2"
-          RING_CFLAGS: "-march=x86-64-v2 -O2"
+          # x86-64-v2 = Nehalem baseline (SSE4.2)
+          # -avx,-avx2,-fma,-f16c = 禁止使用 VEX 编码，强制用 SSE 编码
+          # 这样 J3455 (无 AVX) 也能执行所有指令
+          RUSTFLAGS: "-C target-cpu=x86-64-v2 -C target-feature=-avx,-avx2,-fma,-f16c"
+          CFLAGS: "-march=x86-64-v2 -mno-avx -mno-avx2 -mno-fma -mno-f16c -O2"
+          CXXFLAGS: "-march=x86-64-v2 -mno-avx -mno-avx2 -mno-fma -mno-f16c -O2"
         run: maturin build --release --interpreter python3.12
 
       - name: Upload wheel artifact
