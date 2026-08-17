@@ -17,6 +17,15 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Cargo cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: lancedb-x86-64-v2-v2
+
       - name: Install maturin
         run: pip install maturin
 
