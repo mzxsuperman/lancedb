@@ -24,15 +24,20 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: lancedb-x86-64-v2-v2
+          key: lancedb-x86-64-v2-v3
 
       - name: Install maturin
         run: pip install maturin
 
-      - name: Build lancedb wheel (x86-64-v2 baseline)
+      - name: Build lancedb wheel (x86-64-v2 baseline, C + Rust)
         working-directory: python
         env:
           RUSTFLAGS: "-C target-cpu=x86-64-v2"
+          CFLAGS: "-march=x86-64-v2 -O2"
+          CXXFLAGS: "-march=x86-64-v2 -O2"
+          # aws-lc-rs / ring build scripts read these
+          AWS_LC_CFLAGS: "-march=x86-64-v2 -O2"
+          RING_CFLAGS: "-march=x86-64-v2 -O2"
         run: maturin build --release --interpreter python3.12
 
       - name: Upload wheel artifact
